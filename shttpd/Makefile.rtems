@@ -1,0 +1,48 @@
+
+include $(RTEMS_MAKEFILE_PATH)/Makefile.inc
+include $(RTEMS_CUSTOM)
+include $(PROJECT_ROOT)/make/leaf.cfg
+
+CFLAGS += -I $(INSTALL_BASE)/include
+
+CFLAGS += -w 
+CFLAGS += -std=gnu99
+CFLAGS += -MT $@ -MD -MP -MF $(basename $@).d
+CFLAGS += -DHAVE_MD5
+CFLAGS += -D_DEBUG
+CFLAGS += -DNO_CGI -DNO_SSL -DNO_AUTH -DNO_GUI
+
+C_FILES =
+C_FILES += string.c shttpd.c log.c auth.c md5.c \
+		cgi.c mime_type.c config.c \
+		io_file.c io_socket.c io_ssl.c io_emb.c io_dir.c io_cgi.c
+
+H_FILES=		defs.h llist.h shttpd.h std_includes.h io.h md5.h ssl.h \
+		compat_unix.h compat_win32.h compat_rtems.h
+
+C_O_FILES = $(C_FILES:%.c=%.o)
+C_D_FILES = $(C_FILES:%.c=%.d)
+
+LIB = libshttpd.a
+
+all: $(LIB)
+
+$(LIB): $(C_O_FILES)
+	#$(AR) rcu $@ $^
+	$(CC) -c $(CFLAGS) -DEMBEDDED $(C_FILES) compat_rtems.c
+	$(AR) -r $(LIB) *.o && ranlib $(LIB) 
+
+install: $(LIB)
+	install -d $(RTEMS_USR_INSTALL_ROOT)/lib
+	install -d $(RTEMS_USR_INSTALL_ROOT)/include
+	install -d $(RTEMS_USR_INSTALL_ROOT)/include/shttpd
+	install -c -m 644 shttpd.h $(RTEMS_USR_INSTALL_ROOT)/include/shttpd
+	install -c -m 644 $(LIB) $(RTEMS_USR_INSTALL_ROOT)/lib
+
+clean:
+	rm -f $(LIB) $(C_O_FILES) $(C_D_FILES) $(GEN_FILES)
+
+-include $(C_D_FILES)
+
+doc: 
+
