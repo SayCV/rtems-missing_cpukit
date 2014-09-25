@@ -9,7 +9,8 @@ CFLAGS += -w
 CFLAGS += -std=gnu99
 CFLAGS += -MT $@ -MD -MP -MF $(basename $@).d
 CFLAGS += -DHAVE_MD5
-CFLAGS += -D_DEBUG
+#CFLAGS += -D_DEBUG
+CFLAGS += -DNDEBUG
 CFLAGS += -DNO_CGI -DNO_SSL -DNO_AUTH -DNO_GUI
 
 C_FILES =
